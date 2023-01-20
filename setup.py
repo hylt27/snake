@@ -124,6 +124,8 @@ while True:
                 if main_game.snake.direction.x != 1:
                     main_game.snake.direction = Vector2(-1,0)
 
+def idiota():
+    print('aaa')
 
     screen.fill((0, 154, 23))
     main_game.draw_elements()
