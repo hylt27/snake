@@ -57,7 +57,21 @@ class Snake:
             elif index == len(self.body) - 1:
                 self.update_tail_graphics(snake_rect)
             else:
-                pygame.draw.rect(screen, (104, 71, 141), snake_rect)
+                previous_block = self.body[index + 1] - block
+                next_block = self.body[index - 1] - block
+                if previous_block.x == next_block.x:
+                    screen.blit(self.body_vertical, snake_rect)
+                elif previous_block.y == next_block.y:
+                    screen.blit(self.body_horizontal, snake_rect)
+                else:
+                    if previous_block.x == -1 and next_block.y == -1 or previous_block.y == -1 and next_block.x == -1:
+                        screen.blit(self.body_tl, snake_rect)
+                    elif previous_block.x == -1 and next_block.y == 1 or previous_block.y == 1 and next_block.x == -1:
+                        screen.blit(self.body_bl, snake_rect)
+                    elif previous_block.x == 1 and next_block.y == -1 or previous_block.y == -1 and next_block.x == 1:
+                        screen.blit(self.body_tr, snake_rect)
+                    elif previous_block.x == 1 and next_block.y == 1 or previous_block.y == 1 and next_block.x == 1:
+                        screen.blit(self.body_br, snake_rect)
 
     def update_head_graphics(self, rect):
         head_direction = self.body[0] - self.body[1]
@@ -108,6 +122,7 @@ class Main:
         self.check_fail()
 
     def draw_elements(self):
+        self.draw_grass()
         self.rat.draw_rat()
         self.snake.draw_snake()
 
@@ -128,7 +143,20 @@ class Main:
         for block in self.snake.body[1:]:
             if block == self.snake.body[0]:
                 self.game_over()
-
+    
+    def draw_grass(self):
+        grass_color = (144,214,170)
+        for row in range(cell_number):
+            if row % 2 == 0:
+                for col in range(cell_number):
+                    if col % 2 == 0:
+                        grass_rect = pygame.Rect(col*cell_size, row*cell_size, cell_size, cell_size)
+                        pygame.draw.rect(screen, grass_color, grass_rect)
+            else:
+                for col in range(cell_number):
+                    if col % 2 != 0:
+                        grass_rect = pygame.Rect(col*cell_size, row*cell_size, cell_size, cell_size)
+                        pygame.draw.rect(screen, grass_color, grass_rect)
     def game_over(self):
         pygame.quit()
         sys.exit()
@@ -177,7 +205,7 @@ while True:
                     main_game.snake.direction = Vector2(-1,0)
 
 
-    screen.fill((0, 154, 23))
+    screen.fill((138,206,163))
     main_game.draw_elements()
     pygame.display.update()
     clock.tick(60)
