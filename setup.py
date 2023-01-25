@@ -23,7 +23,7 @@ class Snake:
     def __init__(self):
         # create the body of a snake with 3 blocks length
         self.body = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]  # each element is a position vector
-        self.direction = Vector2(1,0)
+        self.direction = Vector2(0,0)
         self.new_block = False
 
         # sprites for snake body
@@ -44,6 +44,9 @@ class Snake:
         self.body_tl = pygame.image.load('Graphics/body_tl.png').convert_alpha()
         self.body_br = pygame.image.load('Graphics/body_br.png').convert_alpha()
         self.body_bl = pygame.image.load('Graphics/body_bl.png').convert_alpha()
+
+        # sound
+        self.crunch_sound = pygame.mixer.Sound('Sound/Sound_crunch.wav')
 
     def draw_snake(self):
         for index, block in enumerate(self.body):
@@ -111,6 +114,13 @@ class Snake:
     def add_block(self):
         self.new_block = True
 
+    def play_crunch_sound(self):
+        self.crunch_sound.play()
+
+    def reset_snake(self):
+        self.body = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
+        self.direction = Vector2(0,0)
+
 class Main:
     def __init__(self):
         self.snake = Snake()
@@ -125,12 +135,18 @@ class Main:
         self.draw_grass()
         self.rat.draw_rat()
         self.snake.draw_snake()
+        self.draw_score()
 
     def check_collision(self):
         # checks if the snake ate the rat and then add a new block to the body
         if self.rat.position == self.snake.body[0]:
             self.rat.randomize()
             self.snake.add_block()
+            self.snake.play_crunch_sound()
+
+        for block in self.snake.body[1:]:
+            if block == self.rat.position:
+                self.rat.randomize()
 
     def check_fail(self):
         # checks if the snake hits the walls
@@ -143,9 +159,9 @@ class Main:
         for block in self.snake.body[1:]:
             if block == self.snake.body[0]:
                 self.game_over()
-    
+
     def draw_grass(self):
-        grass_color = (144,214,170)
+        grass_color = (40,71,52)
         for row in range(cell_number):
             if row % 2 == 0:
                 for col in range(cell_number):
@@ -157,21 +173,34 @@ class Main:
                     if col % 2 != 0:
                         grass_rect = pygame.Rect(col*cell_size, row*cell_size, cell_size, cell_size)
                         pygame.draw.rect(screen, grass_color, grass_rect)
+
+    def draw_score(self):
+        score_text = str(len(self.snake.body) - 3)
+        score_surface = game_font.render(score_text, False, (0, 0, 0))
+        x_pos = cell_size*cell_number - 60
+        y_pos = cell_size*cell_number - 40
+        score_rect = score_surface.get_rect(center = (x_pos, y_pos))
+        rat_rect = rat.get_rect(midright = (score_rect.left, score_rect.centery))
+
+
+        screen.blit(score_surface, score_rect)
+        screen.blit(rat, rat_rect)
+
     def game_over(self):
-        pygame.quit()
-        sys.exit()
+        self.snake.reset_snake()
 
 
 
 
 # general settings
+pygame.mixer.pre_init()
 pygame.init()
 cell_size = 40
 cell_number = 15
 screen = pygame.display.set_mode((cell_size*cell_number, cell_size*cell_number))
 clock = pygame.time.Clock()
 rat = pygame.image.load('Graphics/rat.png').convert_alpha()
-
+game_font = pygame.font.Font('LLPIXEL3.ttf', 25)
 
 surface = pygame.Surface((100, 200))
 surface.fill('blue')
@@ -205,7 +234,7 @@ while True:
                     main_game.snake.direction = Vector2(-1,0)
 
 
-    screen.fill((138,206,163))
+    screen.fill((21,71,52))
     main_game.draw_elements()
     pygame.display.update()
     clock.tick(60)
